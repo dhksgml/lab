@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* html, body{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        } */
+        /* canvas{
+            border: 1px solid black;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -250px 0 0 -480px; 
+        } */
+    </style>
+</head>
+<body>
+    <!-- <script src="three.min.js"></script>
+    <script src="GLTFLoader.js"></script> -->
+    
+        <script type="module">
+            import * as THREE from 'https://cdn.skypack.dev/three@^0.135.0';
+            import threeDragcontrols from 'https://cdn.skypack.dev/three-dragcontrols';
+            import {GLTFLoader} from 'https://cdn.skypack.dev/three@^0.135.0/examples/jsm/loaders/GLTFLoader.js';
+            import { OrbitControls } from 'https://cdn.skypack.dev/three@^0.135.0/examples/jsm/controls/OrbitControls.js';
+            
+            let scene, camera, renderer;
+            let hlight, directionalLight;
+            
+            function init(){
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xdddddd);
+
+                camera = new THREE.PerspectiveCamera(40,window.innerWidth/window.innerHeight, 1, 5000);
+                // camera.rotation.y = -45/180*Math.PI;
+                // camera.position.x = 30;
+                // camera.position.y = -10;
+                // camera.position.z = 20;
+                camera.position.set(0,2,10)
+
+                renderer = new THREE.WebGLRenderer({antialias:true});
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                document.body.appendChild(renderer.domElement);
+
+
+                hlight = new THREE.AmbientLight(0x404040,100);
+                scene.add(hlight);
+
+                directionalLight = new THREE.DirectionalLight(0xffffff,50);
+                directionalLight.position.set(0,1,0);
+                directionalLight.castShadow = true;
+                scene.add(directionalLight);
+
+                const light1 = new THREE.PointLight(0xc4c4c4,10);
+                light1.position.set(-10,5,0);
+                scene.add(light1);
+
+                const light2 = new THREE.PointLight(0xc4c4c4,10);
+                light2.position.set(10,5,0);
+                scene.add(light2);
+                
+                const light3 = new THREE.PointLight(0xc4c4c4,10);
+                light3.position.set(0,10,-10);
+                scene.add(light3);
+
+                const light4 = new THREE.PointLight(0xc4c4c4,10);
+                light4.position.set(0,10,10);
+                scene.add(light4);
+
+                let car;
+
+                function dumpObject(obj, lines = [], isLast = true, prefix = "") {
+                    const localPrefix = isLast ? "└─" : "├─";
+                    lines.push(
+                        `${prefix}${prefix ? localPrefix : ""}${obj.name || "*no-name*"} [${
+                        obj.type
+                        }]`
+                    );
+                    const newPrefix = prefix + (isLast ? "  " : "│ ");
+                    const lastNdx = obj.children.length - 1;
+                    obj.children.forEach((child, ndx) => {
+                        const isLast = ndx === lastNdx;
+                        dumpObject(child, lines, isLast, newPrefix);
+                    });
+                    return lines;
+                }
+
+                let loader = new GLTFLoader();
+                loader.load('images/scene.gltf',function(gltf){
+                    console.log(gltf)
+                    // gltf.parser.nodeNamesUsed.Cube001 = false;
+                    // gltf.parser.nodeNamesUsed.RootNode = false;
+                    // gltf.parser.nodeNamesUsed.Cylinder007_tire_0 = false;
+                    // gltf.parser.nodeNamesUsed.Cylinder007_tire_0_1 = false;
+                    // console.log(gltf.scene.children[0].children[0].children[0].children[0].children[5])
+                    // gltf.scene.children[0].children[0].children[0].children[0].children[5].rotation.z -= 40;
+                    // console.log(gltf.scene.children[0].children[0].children[0].children[0].children[5])
+                    // gltf.scene.children[0].children[0].children[0].children[0].children[0].children[0].position.z -= 10
+
+                    console.log(dumpObject(gltf.scene).join('\n'));
+                    console.log(gltf.scene.children[0].children[0].children[0].children[0].children[2].children[20])
+
+                    //왼쪽 앞 바퀴
+                    gltf.scene.children[0].children[0].children[0].children[0].children[2].children[20].rotation.z += 0.2;
+                    //오른쪽 앞 바퀴
+                    gltf.scene.children[0].children[0].children[0].children[0].children[6].rotation.z += 0.3;
+
+                    // gltf.scene.children[0].children[0].children[0].children[0].children[6].position.x += 100;
+
+
+                    //왼쪽 뒷 바퀴
+                    // gltf.scene.children[0].children[0].children[0].children[0].children[2].children[1].rotation.z += 0;
+                    // gltf.scene.children[0].children[0].children[0].children[0].children[4].rotation.z -= 40
+
+                    // gltf.scene.children[0].children[0].children[0].children[0].children[5].position.y += 100
+                    
+                    //오른쪽 뒷 바퀴
+                    // gltf.scene.children[0].children[0].children[0].children[0].children[1].rotation.z += 40
+
+                    car = gltf.scene;
+                    car.position.set(10,11,10)
+
+                    //박스를 생성하여 모델을 중앙을 기준으로 회전 적용 
+                    var box = new THREE.Box3().setFromObject(car)
+                    var center = new THREE.Vector3();
+                    box.getCenter(center);
+                    car.position.sub(center);
+                    scene.add(car);
+                    
+
+                    //자동차에 박스를 하나 생성하여 자동차 기준으로 원점을 설정해 줘야함.
+                                        
+                    renderer.render(scene,camera);
+                    
+                },function(xhr){
+                    console.log((xhr.loaded/xhr.total * 100)+"% loaded")
+                },function(error){
+                    console.log("an error occurred")
+                });
+
+                
+                // const controls = new THREE.OrbitControls( camera, renderer.domElement );
+                // controls.addEventListner('mousedown',function(event){camera.position.x += 1},false);
+
+                // const geometry = new THREE.BoxGeometry(1,1,1)
+                // const material = new THREE.MeshBasicMaterial({
+                //     color: 0x00ff00
+                // })
+                // const boxMesh = new THREE.Mesh(geometry,material)
+                // scene.add(boxMesh)
+                // renderer.render(scene, camera)
+
+                // renderer.render(scene,camera);
+                // var controls = new threeDragcontrols(car, camera, renderer.domElement);
+                // document.body.appendChild(renderer.domElement);
+
+                // controls.addEventListener('dragstart',function(event){});
+                // controls.removeEventListener('dragend',function(event){});
+
+            }
+
+            
+            init();
+
+            const controls = new OrbitControls(camera, renderer.domElement);
+    
+            // camera.position.set(0,20,100);
+            controls.update();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                // controls.autoRotate = true
+                controls.update()
+                renderer.render(scene,camera)
+            }
+
+            animate();
+        
+        </script>
+
+</body>
+</html>
