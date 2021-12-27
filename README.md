@@ -18,3 +18,7 @@ console.log(i)
 int i = 0;
 std::cout>>"Hello World!!";
 ```
+
+1. 1번 입니다.
+2. 2번 입니다.
+3. 3번 입니다.
