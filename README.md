@@ -12,3 +12,7 @@
 ```javascript
 var i = 1
 console.log(i)
+
+```c++
+int i = 0;
+std::cout>>"Hello World!!";
